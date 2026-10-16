@@ -45,9 +45,72 @@ Event information © ARISS; see their site for the official schedule.
 
 An empty `events` list is fine.
 
+## Automatic updates
+
+The *Update events* workflow (`.github/workflows/update.yml`) runs every 2
+hours (and by hand via *Run workflow*). `scripts/update_events.py` reads the
+[ARISS upcoming SSTV events page](https://www.ariss.org/upcoming-sstv-events.html)
+and the ARISS press-release RSS, rebuilds `sstv-events.json`, and checks it
+with the unit tests and `scripts/validate.py`.
+
+- **Changes come as a pull request**, from the branch `auto/sstv-events`
+  ("Update SSTV events from ARISS"), with the diff in the description.
+  Check the dates, times and frequency against ARISS and merge it; nothing
+  reaches phones until you do. A later run updates the same pull request,
+  and closes it if ARISS goes back to what main already has.
+- **What it reads:** each bold, dated heading on the page is a post. It
+  takes the series number, the quoted title, begin/end date and time ("time
+  TBD" gives `null`), the frequency, the mode (Robot 36, PD 120) and the
+  on/off pattern; "cancelled" or "postponed" sets `status: cancelled`. A
+  date without a year takes the post's year, or the next year if that would
+  put it more than 2 months before the post (a December post about January).
+  Several posts about one series are combined, newest first. A press release
+  about an event that isn't on the page adds it; the page wins otherwise.
+- **What it publishes:** events that end today or later, plus those that
+  ended in the last 2 days. An empty list is normal between events.
+- **ids never change:** `ariss-sstv-<series>`, or `ariss-sstv-<startDate>`
+  when there is no series yet; an event published with a date id keeps it
+  after ARISS gives the series.
+- **Issues it may open:**
+  - *Parser needs attention*: the page couldn't be fetched, the parser
+    failed, it found no dated headings (ARISS changed the page layout), or
+    the result didn't pass the validator. No pull request is opened.
+    Repeated failures comment on the same open issue.
+  - *ARISS SSTV on … MHz is not a built-in app frequency*: an event uses a
+    frequency missing from `app-frequencies.json`. Phones already use the
+    event's frequency; this is a reminder to update the app's fallback.
+- **Keepalive:** on the 1st of each month the workflow commits a timestamp
+  to `.github/keepalive`, because GitHub disables scheduled workflows in a
+  repository with no activity for 60 days.
+
+### Fixing a value by hand: `overrides.json`
+
+When the parser gets a field wrong, or ARISS posts a time only elsewhere
+(e.g. on X), put the fix in `overrides.json` on main. It is merged field by
+field over the parsed event with that `id` on every run, so it survives:
+
+```json
+{
+  "ariss-sstv-34": { "startTime": "09:30", "endTime": "18:00" }
+}
+```
+
+Remove the entry once ARISS's page says the same.
+
+### Fixing "Parser needs attention"
+
+1. Open the run linked in the issue and read the problem lines.
+2. If ARISS was just down, the next run fixes itself; close the issue.
+3. If the page layout changed, save the new page as a fixture
+   (`tests/fixtures/ariss_upcoming_sstv.html`), adjust
+   `scripts/update_events.py` until `python -m unittest discover tests`
+   passes, and merge that. Meanwhile, edit `sstv-events.json` by hand
+   (checklist below).
+
 ## Editing checklist
 
-When ARISS announces or changes an event:
+For hand edits (normally the automatic pull request does this). When ARISS
+announces or changes an event:
 
 1. Add or edit the event in `sstv-events.json`. Keep its `id` unchanged.
 2. Fill in `startTime` / `endTime` once ARISS publishes them.
