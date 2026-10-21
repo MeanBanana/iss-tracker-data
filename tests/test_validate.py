@@ -9,7 +9,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from validate import validate  # noqa: E402
 
-SEED = json.loads((ROOT / "sstv-events.json").read_text(encoding="utf-8"))
+# A frozen copy of sstv-events.json: the live file changes with every
+# schedule update, and the tests must not depend on what ARISS has published.
+SEED = json.loads(
+    (ROOT / "tests" / "fixtures" / "sstv_events_seed.json").read_text(encoding="utf-8")
+)
 
 
 def with_event(**changes):
