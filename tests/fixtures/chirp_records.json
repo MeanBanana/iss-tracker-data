@@ -1,0 +1,34 @@
+[
+  {
+    "vendor": "Baofeng", "model": "UV-5R", "variant": "",
+    "steps_khz": [2.5, 5, 6.25, 10, 12.5, 20, 25, 50],
+    "nostep": false,
+    "bands": [[136000000, 174000000], [400000000, 520000000]],
+    "memory_bounds": [0, 127],
+    "defaults_steps": false
+  },
+  {
+    "vendor": "Icom", "model": "IC-718", "variant": "",
+    "steps_khz": [1, 5, 10],
+    "nostep": false,
+    "bands": [[1800000, 30000000]],
+    "memory_bounds": [1, 99],
+    "defaults_steps": false
+  },
+  {
+    "vendor": "Yaesu", "model": "FT-60", "variant": "",
+    "steps_khz": [5, 6.25, 8.33, 9, 10, 12.5, 15, 20, 25, 50, 100],
+    "nostep": false,
+    "bands": [[108000000, 520000000]],
+    "memory_bounds": [1, 1000],
+    "defaults_steps": true
+  },
+  {
+    "vendor": "Icom", "model": "IC-9700", "variant": "",
+    "steps_khz": [5, 6.25, 10, 12.5, 20, 25],
+    "nostep": true,
+    "bands": [[144000000, 146000000], [430000000, 440000000], [1240000000, 1300000000]],
+    "memory_bounds": [1, 99],
+    "defaults_steps": false
+  }
+]

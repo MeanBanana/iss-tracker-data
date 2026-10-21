@@ -1,0 +1,3 @@
+# CHIRP is not published on PyPI (the "chirp" package there is unrelated), and
+# upstream no longer tags releases, so pin an exact commit of kk7ds/chirp master.
+chirp @ git+https://github.com/kk7ds/chirp@0bfb2b50e33dcaab59c380238f34e053d95dfd50

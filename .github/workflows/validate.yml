@@ -16,3 +16,8 @@ jobs:
         run: python -m unittest discover tests
       - name: Validate sstv-events.json
         run: python scripts/validate.py sstv-events.json
+      - name: Validate radios.json
+        run: |
+          if [ -f radios.json ]; then
+            python -c "import json,sys; sys.path.insert(0,'scripts'); import build_radios as b; p=b.validate(json.load(open('radios.json'))); print(*p, sep='\n'); sys.exit(bool(p))"
+          fi
