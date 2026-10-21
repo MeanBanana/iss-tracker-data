@@ -1,10 +1,14 @@
 """Build radios.json: radios that can receive 2 m / 70 cm, from CHIRP, Hamlib
 and a hand-kept SDR list. This file holds the pure functions (parsing, merging,
-validation); extraction from the CHIRP and Hamlib installs lives alongside.
+validation); extraction from the CHIRP and Hamlib installs and main() follow.
 """
 
+import argparse
+import json
 import re
-from datetime import timezone
+import subprocess
+import sys
+from datetime import datetime, timezone
 
 BAND_RANGES_HZ = {"2m": (144_000_000, 146_000_000), "70cm": (430_000_000, 440_000_000)}
 STYLES = ("memory", "free")
@@ -208,3 +212,122 @@ def validate(doc):
         ):
             problems.append(f"radio {name}: stepsHz must be positive integers")
     return problems
+
+
+# --- live extraction (CI only: needs CHIRP and Hamlib installed) -------------
+
+
+def _chirp_version():
+    """CHIRP's own version plus the pinned commit when pip installed it from git."""
+    import chirp
+
+    version = str(getattr(chirp, "CHIRP_VERSION", "unknown"))
+    try:
+        from importlib import metadata
+
+        direct = json.loads(metadata.distribution("chirp").read_text("direct_url.json") or "{}")
+        commit = direct.get("vcs_info", {}).get("commit_id", "")
+        if commit:
+            version += "+" + commit[:10]
+    except Exception:
+        pass
+    return version
+
+
+def extract_chirp():
+    """(records for chirp_entry, version). Classes that fail are logged and counted."""
+    from chirp import chirp_common, directory
+
+    directory.import_drivers()
+    records, skipped = [], 0
+    for cls in directory.DRV_TO_RADIO.values():
+        try:
+            f = cls(None).get_features()
+            steps = list(f.valid_tuning_steps)
+            records.append(
+                {
+                    "vendor": cls.VENDOR,
+                    "model": cls.MODEL,
+                    "variant": getattr(cls, "VARIANT", "") or "",
+                    "steps_khz": steps,
+                    "defaults_steps": steps == list(chirp_common.COMMON_TUNING_STEPS),
+                    "nostep": bool(f.has_nostep_tuning),
+                    "bands": [(int(lo), int(hi)) for lo, hi in f.valid_bands],
+                    "memory_bounds": tuple(f.memory_bounds),
+                }
+            )
+        except Exception as e:
+            skipped += 1
+            print(f"skip CHIRP class {getattr(cls, '__name__', cls)}: {e!r}", file=sys.stderr)
+    extract_chirp.skipped = skipped
+    return records, _chirp_version()
+
+
+def _rigctl(args, timeout=5):
+    return subprocess.run(
+        ["rigctl", *args], capture_output=True, text=True, timeout=timeout, check=True
+    ).stdout
+
+
+def extract_hamlib():
+    """(items for merge, version). Rigs whose caps fail or show no 2 m / 70 cm RX are dropped."""
+    version = _rigctl(["--version"]).strip()
+    listing = parse_rigctl_list(_rigctl(["-l"], timeout=30))
+    items, skipped = [], 0
+    for rig in listing:
+        try:
+            caps = parse_rigctl_caps(_rigctl(["-m", str(rig["id"]), "--dump-caps"]))
+        except Exception as e:
+            skipped += 1
+            print(f"skip Hamlib rig {rig['id']} {rig['model']}: {e!r}", file=sys.stderr)
+            continue
+        if caps["bands"]:
+            items.append({**rig, **caps})
+    extract_hamlib.skipped = skipped
+    return items, version
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--out", default="radios.json")
+    ap.add_argument("--min-radios", type=int, default=300)
+    args = ap.parse_args(argv)
+
+    chirp_records, chirp_ref = extract_chirp()
+    hamlib_items, hamlib_ref = extract_hamlib()
+    with open("sdr-extra.json", encoding="utf-8") as fh:
+        sdr = json.load(fh)["radios"]
+    chirp_entries = [e for e in map(chirp_entry, chirp_records) if e]
+    radios = merge(chirp_entries, hamlib_items, sdr)
+    doc = document(radios, chirp_ref, hamlib_ref, datetime.now(timezone.utc))
+
+    problems = validate(doc)
+    if len(radios) < args.min_radios:
+        problems.append(f"only {len(radios)} radios, expected at least {args.min_radios}")
+    print(
+        f"radios: {len(radios)} (CHIRP entries {len(chirp_entries)}, Hamlib rigs with 2m/70cm "
+        f"{len(hamlib_items)}, SDR {len(sdr)}); skipped CHIRP classes: "
+        f"{getattr(extract_chirp, 'skipped', 0)}, skipped Hamlib rigs: "
+        f"{getattr(extract_hamlib, 'skipped', 0)}; CHIRP {chirp_ref}; Hamlib {hamlib_ref}"
+    )
+    if problems:
+        print(*problems[:50], sep="\n", file=sys.stderr)
+        return 1
+
+    try:
+        with open(args.out, encoding="utf-8") as fh:
+            old = json.load(fh)
+    except (OSError, ValueError):
+        old = None
+    if old and old.get("radios") == radios and old.get("sources") == doc["sources"]:
+        print("unchanged; file left as is")
+        return 0
+    with open(args.out, "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(doc, fh, indent=1, sort_keys=True, ensure_ascii=False)
+        fh.write("\n")
+    print(f"wrote {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

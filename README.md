@@ -122,3 +122,31 @@ announces or changes an event:
 6. Commit and push. The *Validate events* workflow checks it again. Pages
    updates within a few minutes. Phones pick it up on their next refresh
    (app open after 6 h, or the daily background job).
+
+## radios.json
+
+The radios the app's channel-plan screen can offer: every radio that can
+receive 2 m or 70 cm, with its tuning steps and memory count. Served at
+https://meanbanana.github.io/iss-tracker-data/radios.json (schema 1). Nobody
+edits it by hand; the *Build radios.json* workflow regenerates it.
+
+Sources:
+
+- [CHIRP](https://chirpmyradio.com/) (GPL-3.0): memory-style radios, tuning
+  steps and memory counts. Installed from a pinned commit
+  (`requirements-radios.txt`) because CHIRP is not on PyPI.
+- [Hamlib](https://hamlib.github.io/) (`rigctl`, LGPL-2.1+): receivers that tune
+  freely, for example the Icom IC-9700.
+- `sdr-extra.json`: a short hand-kept list of SDR receivers.
+
+Only facts about the radios (names, numbers) end up in `radios.json`; no CHIRP
+or Hamlib code is copied.
+
+Schedule: every Monday 04:23 UTC, plus a monthly keepalive commit so GitHub
+doesn't disable the schedule. The run commits `radios.json` to `main` only when
+the radios or the source versions changed. To run it now: Actions, *Build
+radios.json*, *Run workflow* on `main`, or `gh workflow run radios.yml`.
+Pull requests that touch the builder run the same build without committing, and
+attach `radios.json` and the raw `rigctl` output as artifacts. Locally:
+`python -m unittest tests.test_build_radios`; the full build needs CHIRP and
+Hamlib installed (`python scripts/build_radios.py --out radios.json`).
