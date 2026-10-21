@@ -60,6 +60,12 @@ class BuildRadiosTest(unittest.TestCase):
         self.assertIs(e["anyFrequency"], False)
         self.assertEqual(e["aliases"], ["UV5R"])
 
+    def test_chirp_entry_empty_steps_fall_back(self):
+        rec = dict(by_model("UV-5R"), steps_khz=[], nostep=False, defaults_steps=False)
+        e = br.chirp_entry(rec)
+        self.assertEqual(e["stepsHz"], [5000])
+        self.assertFalse(e["stepsConfirmed"])
+
     def test_chirp_entry_variant_in_id(self):
         rec = dict(by_model("UV-5R"), variant="Plus")
         self.assertEqual(br.chirp_entry(rec)["id"], "baofeng-uv5r-plus")

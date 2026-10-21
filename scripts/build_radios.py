@@ -59,6 +59,9 @@ def chirp_entry(rec):
         return None
     lo, hi = rec["memory_bounds"]
     steps = sorted({int(round(k * 1000)) for k in rec["steps_khz"]})
+    confirmed = not rec["defaults_steps"]
+    if not steps:  # some drivers list no steps at all: assume the usual 5 kHz, unconfirmed
+        steps, confirmed = [5000], False
     return {
         "id": _entry_id(rec["vendor"], rec["model"], rec.get("variant") or ""),
         "brand": rec["vendor"],
@@ -66,7 +69,7 @@ def chirp_entry(rec):
         "aliases": _aliases(rec["model"]),
         "styles": ["memory"],
         "stepsHz": steps,
-        "stepsConfirmed": not rec["defaults_steps"],
+        "stepsConfirmed": confirmed,
         "anyFrequency": bool(rec["nostep"]),
         "bands": bands,
         "memories": int(hi) - int(lo) + 1,
