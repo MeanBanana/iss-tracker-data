@@ -90,12 +90,62 @@ class BuildRadiosTest(unittest.TestCase):
         self.assertIs(hits[0]["chirp"], True)
         self.assertEqual(hits[0]["memories"], 99)
 
-    def test_merge_sorted_and_hamlib_only(self):
+    def test_merge_sorted(self):
         radios = merged()
         keys = [(r["brand"].lower(), r["model"].lower()) for r in radios]
         self.assertEqual(keys, sorted(keys))
-        ts2000 = [r for r in radios if r["id"] == "kenwood-ts2000"]
-        self.assertEqual(ts2000, [])  # no bands supplied -> not 2m/70cm
+
+    def test_merge_stepped_chirp_keeps_any_frequency_false(self):
+        chirp = [br.chirp_entry(by_model("UV-5R"))]
+        ham = [{"id": 1, "brand": "Baofeng", "model": "UV-5R", "steps_hz": [100], "bands": ["2m"]}]
+        out = br.merge(chirp, ham, [])
+        self.assertEqual(len(out), 1)
+        self.assertIs(out[0]["anyFrequency"], False)
+        self.assertEqual(out[0]["styles"], ["memory", "free"])
+        self.assertEqual(out[0]["stepsHz"], chirp[0]["stepsHz"])
+        self.assertEqual(out[0]["bands"], ["2m", "70cm"])
+
+    def test_merge_band_union(self):
+        chirp = [br.chirp_entry(dict(by_model("UV-5R"), bands=[[144000000, 146000000]]))]
+        ham = [{"id": 1, "brand": "Baofeng", "model": "UV-5R", "steps_hz": [], "bands": ["70cm"]}]
+        self.assertEqual(br.merge(chirp, ham, [])[0]["bands"], ["2m", "70cm"])
+
+    def test_merge_variant_matches_hamlib_without_duplicate(self):
+        chirp = [br.chirp_entry(dict(by_model("UV-5R"), variant="Plus"))]
+        ham = [{"id": 1, "brand": "Baofeng", "model": "UV-5R", "steps_hz": [100], "bands": ["2m"]}]
+        out = br.merge(chirp, ham, [])
+        self.assertEqual([r["id"] for r in out], ["baofeng-uv5r-plus"])
+        self.assertEqual(out[0]["styles"], ["memory", "free"])
+
+    def test_merge_variants_all_gain_free(self):
+        chirp = [
+            br.chirp_entry(by_model("UV-5R")),
+            br.chirp_entry(dict(by_model("UV-5R"), variant="Plus")),
+        ]
+        ham = [{"id": 1, "brand": "Baofeng", "model": "UV-5R", "steps_hz": [], "bands": ["2m"]}]
+        out = br.merge(chirp, ham, [])
+        self.assertEqual(len(out), 2)
+        self.assertTrue(all(r["styles"] == ["memory", "free"] for r in out))
+
+    def test_merge_hamlib_only_entry(self):
+        ham = [{"id": 5, "brand": "Kenwood", "model": "TS-2000",
+                "steps_hz": [10, 50, 100, 1000, 5000], "bands": ["2m", "70cm"]}]
+        e = br.merge([], ham, [])[0]
+        self.assertEqual(e["id"], "kenwood-ts2000")
+        self.assertEqual(e["styles"], ["free"])
+        self.assertEqual(e["memories"], 0)
+        self.assertIs(e["chirp"], False)
+        self.assertIs(e["anyFrequency"], True)
+        self.assertEqual(e["stepsHz"], [100, 1000, 5000])
+        self.assertEqual(e["aliases"], ["TS2000"])
+
+    def test_merge_hamlib_only_step_fallback(self):
+        ham = [{"id": 5, "brand": "X", "model": "Y", "steps_hz": [10, 50], "bands": ["2m"]}]
+        self.assertEqual(br.merge([], ham, [])[0]["stepsHz"], [100])
+
+    def test_merge_hamlib_without_bands_dropped(self):
+        ham = [{"id": 5, "brand": "X", "model": "Y", "steps_hz": [], "bands": []}]
+        self.assertEqual(br.merge([], ham, []), [])
 
     def test_sdr_extra_included(self):
         e = next(r for r in merged() if r["id"] == "rtlsdrblog-v3")

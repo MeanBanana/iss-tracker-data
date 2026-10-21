@@ -145,16 +145,20 @@ def _hamlib_entry(h):
 
 
 def merge(chirp, hamlib, sdr):
-    """One entry per brand+model (a CHIRP variant makes its own entry)."""
+    """Free-tuning sources join every CHIRP entry with the same brand+model
+    (variants stay separate entries); anything unmatched is its own entry."""
     out = {entry["id"]: dict(entry) for entry in chirp}
+    by_key = {}
+    for entry in out.values():
+        by_key.setdefault(normalise(entry["brand"]) + normalise(entry["model"]), []).append(entry)
     for entry in [e for e in map(_hamlib_entry, hamlib) if e] + [dict(s) for s in sdr]:
-        have = out.get(entry["id"])
-        if have is None:
-            out[entry["id"]] = entry
+        matches = by_key.get(normalise(entry["brand"]) + normalise(entry["model"]))
+        if not matches:
+            out.setdefault(entry["id"], entry)
             continue
-        have["styles"] = [s for s in STYLES if s in have["styles"] or s in entry["styles"]]
-        have["anyFrequency"] = True
-        have["bands"] = [b for b in BAND_RANGES_HZ if b in have["bands"] or b in entry["bands"]]
+        for have in matches:
+            have["styles"] = [s for s in STYLES if s in have["styles"] or s in entry["styles"]]
+            have["bands"] = [b for b in BAND_RANGES_HZ if b in have["bands"] or b in entry["bands"]]
     return sorted(out.values(), key=lambda r: (r["brand"].lower(), r["model"].lower(), r["id"]))
 
 
