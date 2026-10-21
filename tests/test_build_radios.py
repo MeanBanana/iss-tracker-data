@@ -81,11 +81,11 @@ class BuildRadiosTest(unittest.TestCase):
         self.assertIn(
             {"id": 3081, "brand": "Icom", "model": "IC-9700"}, rigs
         )
-        self.assertEqual(len(rigs), 9)
+        self.assertEqual(len(rigs), 10)
         caps = br.parse_rigctl_caps(RIG_CAPS)
         self.assertIn("2m", caps["bands"])
         self.assertIn("70cm", caps["bands"])
-        self.assertEqual(caps["steps_hz"], [10, 100, 1000, 5000])
+        self.assertEqual(caps["steps_hz"][:7], [1, 10, 100, 500, 1000, 5000, 6250])
 
     def test_merge_both_sources(self):
         radios = merged()

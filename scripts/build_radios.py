@@ -96,7 +96,7 @@ _HZ_RANGE = re.compile(
     r"(\d+(?:\.\d+)?)\s*(hz|khz|mhz|ghz)\s*(?:-|\.\.\.|to)\s*(\d+(?:\.\d+)?)\s*(hz|khz|mhz|ghz)?",
     re.I,
 )
-_STEP = re.compile(r"(\d+(?:\.\d+)?)\s*(hz|khz|mhz)\s*$", re.I)
+_STEP = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*(hz|khz|mhz)", re.I)  # "5.0000 kHz:   AM FM ..."
 
 
 def _hz(value, unit):
