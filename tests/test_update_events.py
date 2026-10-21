@@ -12,7 +12,11 @@ import update_events as ue  # noqa: E402
 FIXTURES = ROOT / "tests" / "fixtures"
 PAGE = (FIXTURES / "ariss_upcoming_sstv.html").read_text(encoding="utf-8", errors="replace")
 FEED = (FIXTURES / "ariss_press_feed.xml").read_text(encoding="utf-8", errors="replace")
-SEED = json.loads((ROOT / "sstv-events.json").read_text(encoding="utf-8"))
+# A frozen copy of sstv-events.json: the live file changes with every
+# schedule update, and the tests must not depend on what ARISS has published.
+SEED = json.loads(
+    (ROOT / "tests" / "fixtures" / "sstv_events_seed.json").read_text(encoding="utf-8")
+)
 APP_FREQS = [145800000, 145825000, 437550000, 437800000]
 NOW = datetime(2026, 10, 16, 8, 0, tzinfo=timezone.utc)
 
