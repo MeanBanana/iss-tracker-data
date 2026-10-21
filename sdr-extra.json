@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "radios": [
+    {"id": "rtlsdrblog-v3", "brand": "RTL-SDR Blog", "model": "V3", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false},
+    {"id": "rtlsdrblog-v4", "brand": "RTL-SDR Blog", "model": "V4", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false},
+    {"id": "sdrplay-rsp1a", "brand": "SDRplay", "model": "RSP1A", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false},
+    {"id": "sdrplay-rspdx", "brand": "SDRplay", "model": "RSPdx", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false},
+    {"id": "airspy-r2", "brand": "Airspy", "model": "R2", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false},
+    {"id": "airspy-mini", "brand": "Airspy", "model": "Mini", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false},
+    {"id": "hackrf-one", "brand": "HackRF", "model": "One", "aliases": [], "styles": ["free"], "stepsHz": [100], "stepsConfirmed": true, "anyFrequency": true, "bands": ["2m", "70cm"], "memories": 0, "chirp": false}
+  ]
+}

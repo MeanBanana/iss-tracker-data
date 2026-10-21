@@ -1,0 +1,10 @@
+ Rig #  Mfg                    Model                   Version         Status      Macro
+     1  Hamlib                 Dummy                   20230101.0      Stable      RIG_MODEL_DUMMY
+  1035  Yaesu                  FT-991                  20230212.0      Stable      RIG_MODEL_FT991
+  1036  Yaesu                  FT-991A                 20230212.0      Stable      RIG_MODEL_FT991A
+  2014  Kenwood                TS-2000                 20230103.0      Stable      RIG_MODEL_TS2000
+  3013  Icom                   IC-718                  20230301.0      Stable      RIG_MODEL_IC718
+  3070  Icom                   IC-705                  20230301.0      Stable      RIG_MODEL_IC705
+  3081  Icom                   IC-9700                 20230301.0      Stable      RIG_MODEL_IC9700
+  4001  AOR                    AR8200                  20230115.0      Beta        RIG_MODEL_AR8200
+ 25016  Elecraft               K3                      20230115.0      Stable      RIG_MODEL_K3

@@ -1,0 +1,36 @@
+Caps dump for model:	3081
+Model name:	IC-9700
+Mfg name:	Icom
+Hamlib version:	Hamlib 4.5.5
+Backend version:	20230301.0
+Backend copyright:	LGPL
+Backend status:	Stable
+Rig type:	Transceiver
+PTT type:	Rig capable
+DCD type:	Rig capable
+Port type:	RS-232
+Serial speed: 300..115200 baud, 8N1
+
+Can set Frequency:	Y
+Can get Frequency:	Y
+Can set Mode:	Y
+
+TX frequency ranges #1:
+	144000000Hz - 146000000Hz	FM,USB,LSB,CW,RTTY	5W - 100W
+	430000000Hz - 440000000Hz	FM,USB,LSB,CW,RTTY	5W - 75W
+	1240000000Hz - 1300000000Hz	FM,USB,LSB,CW,RTTY	1W - 10W
+
+RX frequency ranges #1:
+	144000000Hz - 146000000Hz	FM,USB,LSB,CW,RTTY,AM
+	430000000Hz - 440000000Hz	FM,USB,LSB,CW,RTTY,AM
+	1240000000Hz - 1300000000Hz	FM,USB,LSB,CW,RTTY,AM
+
+Tuning steps:
+	FM: 5 kHz
+	USB,LSB,CW: 10 Hz
+	AM: 1 kHz
+	ANY: 100 Hz
+
+Tuning steps list end.
+Bandwidths:
+	USB,LSB: 2.4 kHz
