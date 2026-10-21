@@ -293,7 +293,7 @@ def extract_hamlib():
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", default="radios.json")
-    ap.add_argument("--min-radios", type=int, default=300)
+    ap.add_argument("--min-radios", type=int, default=517)
     args = ap.parse_args(argv)
 
     chirp_records, chirp_ref = extract_chirp()

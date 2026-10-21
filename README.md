@@ -150,3 +150,7 @@ Pull requests that touch the builder run the same build without committing, and
 attach `radios.json` and the raw `rigctl` output as artifacts. Locally:
 `python -m unittest tests.test_build_radios`; the full build needs CHIRP and
 Hamlib installed (`python scripts/build_radios.py --out radios.json`).
+
+The build fails (and nothing is committed) if validation finds problems or fewer
+than 517 radios come out. 517 is 80% of the 647 radios the first real run
+produced, so a broken extraction is caught without tripping on normal drift.
