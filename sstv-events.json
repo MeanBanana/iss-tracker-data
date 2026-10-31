@@ -1,19 +1,5 @@
 {
   "schema": 1,
-  "updated": "2026-10-21T07:41:51Z",
-  "events": [
-    {
-      "id": "ariss-sstv-34",
-      "title": "ARISS Hardware",
-      "startDate": "2026-10-22",
-      "startTime": "15:30",
-      "endDate": "2026-10-25",
-      "endTime": "18:00",
-      "frequencyHz": 437550000,
-      "mode": "Robot 36",
-      "pattern": "36 s on, 2 min off",
-      "status": "scheduled",
-      "url": "https://www.ariss.org/upcoming-sstv-events.html"
-    }
-  ]
+  "updated": "2026-10-31T18:35:29Z",
+  "events": []
 }
