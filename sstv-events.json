@@ -1,5 +1,19 @@
 {
   "schema": 1,
-  "updated": "2026-11-02T15:59:48Z",
-  "events": []
+  "updated": "2026-11-07T16:28:20Z",
+  "events": [
+    {
+      "id": "ariss-sstv-35",
+      "title": "Space Memories",
+      "startDate": "2026-11-09",
+      "startTime": null,
+      "endDate": "2026-11-16",
+      "endTime": null,
+      "frequencyHz": 437550000,
+      "mode": null,
+      "pattern": null,
+      "status": "scheduled",
+      "url": "https://www.ariss.org/upcoming-sstv-events.html"
+    }
+  ]
 }
