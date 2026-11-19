@@ -1,8 +1,9 @@
 name: Update events
 
-# Reads the ARISS upcoming-SSTV page and press RSS every 2 hours and proposes
-# changes to sstv-events.json as ONE pull request (branch auto/sstv-events)
-# for a human to merge. Never pushes events to main and never merges.
+# Reads the ARISS upcoming-SSTV page and press RSS every 2 hours. A change to
+# sstv-events.json goes through ONE pull request (branch auto/sstv-events),
+# which this workflow squash-merges itself once the unit tests and
+# validate.py pass. The merged PR stays as the record of what changed.
 
 on:
   schedule:
@@ -83,9 +84,10 @@ jobs:
             fi
           done
 
-      - name: Propose the change
+      - name: Publish the change
         if: steps.parse.outputs.status == 'changed'
         run: |
+          set -o pipefail # a failing validator must stop the merge, not hide behind tee
           python scripts/validate.py sstv-events.json | tee "$RUNNER_TEMP/validate.txt"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -96,7 +98,7 @@ jobs:
           {
             echo "Automatic update from the [ARISS upcoming SSTV events page](https://www.ariss.org/upcoming-sstv-events.html) and press releases."
             echo
-            echo "**Check the dates, times and frequency against ARISS before merging**: the page is free text, and a misread value reaches every phone. Wrong field? Fix it in \`overrides.json\` on main, and the next run uses it."
+            echo "Merged automatically because the unit tests and the validator passed. The page is free text, so check the dates, times and frequency against ARISS. Wrong field? Fix it in \`overrides.json\` on main, and the next run (or *Run workflow*) publishes the fix."
             echo
             if [ "$(jq '.missing | length' "$RUNNER_TEMP/report.json")" != "0" ]; then
               echo "### Missing from ARISS — check by hand"
@@ -118,8 +120,15 @@ jobs:
           if [ -n "$number" ]; then
             gh pr edit "$number" --body-file "$RUNNER_TEMP/pr.md"
           else
-            gh pr create --base main --head "$BRANCH" --title "Update SSTV events from ARISS" --body-file "$RUNNER_TEMP/pr.md"
+            number=$(gh pr create --base main --head "$BRANCH" --title "Update SSTV events from ARISS" --body-file "$RUNNER_TEMP/pr.md" | grep -o '[0-9]*$')
           fi
+          # GitHub needs a moment to work out mergeability for a fresh push.
+          for attempt in 1 2 3 4 5 6; do
+            if gh pr merge "$number" --squash --delete-branch; then exit 0; fi
+            sleep 10
+          done
+          echo "::error::Could not merge PR #$number"
+          exit 1
 
       - name: Close a proposal that is no longer needed
         if: steps.parse.outputs.status == 'unchanged'

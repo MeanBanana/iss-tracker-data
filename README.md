@@ -55,9 +55,11 @@ with the unit tests and `scripts/validate.py`.
 
 - **Changes come as a pull request**, from the branch `auto/sstv-events`
   ("Update SSTV events from ARISS"), with the diff in the description.
-  Check the dates, times and frequency against ARISS and merge it; nothing
-  reaches phones until you do. A later run updates the same pull request,
-  and closes it if ARISS goes back to what main already has.
+  The workflow squash-merges it itself once the unit tests and
+  `validate.py` pass, so it reaches phones (via Pages) within minutes. The
+  merged pull request is the record: check its dates, times and frequency
+  against ARISS, and fix a misread field in `overrides.json` (below). If the
+  merge fails, the run fails and the pull request stays open for you.
 - **What it reads:** each bold, dated heading on the page is a post. It
   takes the series number, the quoted title, begin/end date and time ("time
   TBD" gives `null`), the frequency, the mode (Robot 36, PD 120) and the
